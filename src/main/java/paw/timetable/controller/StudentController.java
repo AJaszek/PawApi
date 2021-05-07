@@ -6,9 +6,11 @@
 package paw.timetable.controller;
 
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -31,7 +33,11 @@ public class StudentController {
     Iterable<Student> getAllStudents() {
         return studentRepository.findAll();
     }
-
+    @GetMapping("/student/{id}")
+    public @ResponseBody
+    Optional<Student> getStudentById(@PathVariable int id) {
+        return studentRepository.findById(id);
+    }
     @PostMapping(path = "/student")
     public @ResponseBody
     String addNewStudent(@RequestBody Map<String, Object> body) {
