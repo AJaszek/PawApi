@@ -9,12 +9,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import paw.timetable.controller.ClassController;
 import paw.timetable.controller.StudentController;
 import paw.timetable.controller.SubjectController;
@@ -36,15 +40,14 @@ class TimetableApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper mapper;
-
-   /* @Test
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+    /* @Test
     void contextLoads() {
         //assertThat(controller).isNotNull();
     }*/
-
     @Test
     void loadControllers() {
         assertThat(classController).isNotNull();
@@ -71,32 +74,30 @@ class TimetableApplicationTests {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
-        List<Student> students = mapper.readValue(result.getResponse().getContentAsString(), 
-                new TypeReference<List<Student>>() {});
+        List<Student> students = mapper.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<List<Student>>() {
+        });
 
         assertThat(students).isNotNull();
         assertThat(students.size()).isGreaterThan(0);
     }
-    
+
     @Test
     public void studentIsNotEmpty() throws Exception {
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/student/1"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
 
-        Student student = mapper.readValue(result.getResponse().getContentAsString(), 
+        Student student = mapper.readValue(result.getResponse().getContentAsString(),
                 Student.class);
 
         assertThat(student).isNotNull();
         assertThat(student.getId()).isEqualTo(1);
         assertThat(student.getFirst_name()).isNotNull();
         assertThat(student.getLast_name()).isNotNull();
-        
+
     }
-    
-    
-    
-    
+
     @Test
     public void postEmptyStudentAndGet400() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post(("/student"))
@@ -105,4 +106,22 @@ class TimetableApplicationTests {
 
     }
 
+
+
+    @Test
+    public void uploadFile()
+            throws Exception {
+        MockMultipartFile file
+                = new MockMultipartFile(
+                        "file",
+                        "hello.txt",
+                        MediaType.TEXT_PLAIN_VALUE,
+                        "Hello, World!".getBytes()
+                );
+
+        MockMvc mockMvc
+                = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/uploadFile").file(file))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
 }
