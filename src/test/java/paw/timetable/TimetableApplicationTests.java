@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -24,9 +25,11 @@ import paw.timetable.controller.StudentController;
 import paw.timetable.controller.SubjectController;
 import paw.timetable.controller.TeacherController;
 import paw.timetable.model.Student;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "arek", roles = {"TEACHER"})
 class TimetableApplicationTests {
 
     @Autowired
@@ -44,16 +47,28 @@ class TimetableApplicationTests {
     private ObjectMapper mapper;
     @Autowired
     private WebApplicationContext webApplicationContext;
-    /* @Test
-    void contextLoads() {
-        //assertThat(controller).isNotNull();
-    }*/
+
     @Test
     void loadControllers() {
         assertThat(classController).isNotNull();
         assertThat(studentController).isNotNull();
         assertThat(subjectController).isNotNull();
         assertThat(teacherController).isNotNull();
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void unauthorizedUserCantGet() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/student/all"))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "arek", roles = {"STUDENT"})
+    public void forbiddenPostForStudent() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post(("/student"))
+                .contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
@@ -105,8 +120,6 @@ class TimetableApplicationTests {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
     }
-
-
 
     @Test
     public void uploadFile()
