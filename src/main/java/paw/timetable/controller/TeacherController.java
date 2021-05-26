@@ -60,7 +60,7 @@ public class TeacherController {
         u.setRole("ROLE_" + body.get("role").toString());
 
         if (userRepository.register(u) == 1);
-        userRepository.registerRole(u);
+            userRepository.registerRole(u);
 
         return "Saved";
     }
