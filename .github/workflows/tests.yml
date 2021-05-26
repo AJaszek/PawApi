@@ -20,7 +20,5 @@ jobs:
       uses: actions/setup-java@v2
       with:
         java-version: '11'
-        distribution: 'adopt'
-    - name: Build with Maven
-     
+        distribution: 'adopt'   
     - run: mvn test
